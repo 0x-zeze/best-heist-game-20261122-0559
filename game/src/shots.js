@@ -51,9 +51,12 @@ export function stageShot(name, world) {
     state.message = 'GUARD A IS CHASING YOU — break line of sight!';
     state.messageTimer = 99;
   } else if (name === 'hud') {
-    // The goal: vault loot secured, thief at the green EXIT, alarm cooling.
+    // The goal: vault loot secured, gold bar pocketed on the way out
+    // (score $6,200 = $5,000 vault + $1,200 gold — the checklist agrees),
+    // thief at the green EXIT, alarm cooling.
     state.vaultOpen = true;
     state.vaultLootTaken = true;
+    state.loot.find((item) => item.id === 'gold').taken = true;
     state.score = 6200;
     state.time = 74;
     state.alarm = 28;

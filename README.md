@@ -52,7 +52,9 @@ only comes out loud. Walk out quiet and poor, or run out rich and hunted.
 
 Alarm meter with the 70% bust line and the 100% lockdown line, loot in $,
 timer, objective line, per-guard status chips (CALM / SUSPICIOUS / CHASING)
-and per-camera chips (LIVE / OFF), plus a context prompt
+and per-camera chips (LIVE / OFF), a loot checklist (VAULT $5,000,
+JEWELS $800, CASH $500, GOLD BAR $1,200 — ticked ✓ as each haul is
+pocketed, ○ while it is still in the room), plus a context prompt
 ("HOLD E — CRACK VAULT (LOUD! +alarm)").
 
 ## Controls
@@ -75,7 +77,8 @@ two-tone lockdown siren, win fanfare, capture sting.
    50%, 3 guards with vision cones, 2 cameras, loot, EXIT, alarm meter
 2. `02-alarm.png` — the alarm mechanic: cracking the vault at 62%, meter climbing
 3. `03-spotted.png` — the near-miss: guard A's cone on the thief, alarm 85%, CHASE "!"
-4. `04-hud.png` — the goal: $6,200 carried, vault loot secured, thief at the EXIT
+4. `04-hud.png` — the goal: $6,200 carried, vault loot secured, gold bar
+   pocketed (loot checklist: VAULT ✓, GOLD BAR ✓), thief at the EXIT
 
 ## Run it
 

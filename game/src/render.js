@@ -164,11 +164,24 @@ function drawExit(ctx) {
   ctx.fillStyle = '#2eff7a';
   ctx.font = 'bold 17px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('EXIT', EXIT.x + EXIT.w / 2 + 40, EXIT.y + EXIT.h / 2 - 14);
+  // The label sits right of the door and high: in the HUD shot the thief
+  // waits at the door (150, 660), and the old low label touched the
+  // thief's circle. Up here the text clears it by ~40 px.
+  ctx.fillText('EXIT', EXIT.x + EXIT.w / 2 + 46, EXIT.y + EXIT.h / 2 - 34);
   ctx.font = 'bold 11px monospace';
-  ctx.fillText('GETAWAY →', EXIT.x + EXIT.w / 2 + 40, EXIT.y + EXIT.h / 2 + 6);
+  ctx.fillText('GETAWAY →', EXIT.x + EXIT.w / 2 + 46, EXIT.y + EXIT.h / 2 - 14);
   ctx.fillStyle = 'rgba(46, 255, 122, 0.15)';
   ctx.fillRect(EXIT.x + EXIT.w, EXIT.y, 26, EXIT.h);
+}
+
+// A label drawn over a cover block's own label turns into mush: true
+// when a point sits inside any cover block (a few px of margin).
+function labelHitsCover(x, y) {
+  for (const block of COVER) {
+    if (x >= block.x - 6 && x <= block.x + block.w + 6
+      && y >= block.y - 6 && y <= block.y + block.h + 6) return true;
+  }
+  return false;
 }
 
 function drawGuard(ctx, guard) {
@@ -190,12 +203,17 @@ function drawGuard(ctx, guard) {
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 12px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText(guard.name, guard.x, guard.y - 22);
+  // The name sits above the guard — unless a pillar/desk label lives
+  // there (GUARD C staged under the east pillar in the HUD shot put
+  // "GUARD C" on top of "PILLAR"). Then name and mark go below the
+  // guard, under the suspicion bar, where the floor is clear.
+  const labelBelow = labelHitsCover(guard.x, guard.y - 22) || labelHitsCover(guard.x, guard.y - 38);
+  ctx.fillText(guard.name, guard.x, labelBelow ? guard.y + 40 : guard.y - 22);
   const mark = guard.stage === STAGE_CHASE ? '!' : guard.stage === STAGE_SUSPICIOUS ? '?' : '';
   if (mark) {
     ctx.fillStyle = guard.stage === STAGE_CHASE ? '#ff4040' : '#ffb020';
     ctx.font = 'bold 26px monospace';
-    ctx.fillText(mark, guard.x, guard.y - 38);
+    ctx.fillText(mark, guard.x, labelBelow ? guard.y + 58 : guard.y - 38);
   }
   if (guard.stage !== STAGE_CALM) {
     const bw = 44;
@@ -274,6 +292,42 @@ function alarmColor(alarm) {
   if (alarm >= ALARM.bustAlarm) return '#ff7a2a';
   if (alarm >= 40) return '#ffb020';
   return '#2dd4bf';
+}
+
+// The loot checklist: every haul in the room, ticked when pocketed.
+// Built from live state, so the HUD, the room and the score always agree:
+// the vault plus the three quiet-loot items, in vault-first order.
+export function lootChecklist(state) {
+  return [
+    { label: 'VAULT', value: VAULT.loot, taken: state.vaultLootTaken },
+    ...state.loot.map((item) => ({ label: item.label, value: item.value, taken: item.taken })),
+  ];
+}
+
+function drawLootChecklist(ctx, state) {
+  const items = lootChecklist(state);
+  // Docked top-right of the field, under the camera chips: clear of the
+  // vault (ends x 1030), the guards and the room title.
+  const px = CANVAS_WIDTH - 18 - 216;
+  const py = FIELD.y + 32;
+  const pw = 216;
+  const ph = 22 + items.length * 18 + 8;
+  ctx.fillStyle = 'rgba(11, 14, 26, 0.88)';
+  ctx.fillRect(px, py, pw, ph);
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(px, py, pw, ph);
+  ctx.fillStyle = '#ffd94a';
+  ctx.font = 'bold 12px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('LOOT CHECKLIST', px + 10, py + 17);
+  ctx.font = '12px monospace';
+  items.forEach((item, i) => {
+    const y = py + 38 + i * 18;
+    ctx.fillStyle = item.taken ? '#7dff9a' : '#8fa3c8';
+    ctx.fillText(item.taken ? '✓' : '○', px + 10, y);
+    ctx.fillText(`${item.label} $${item.value.toLocaleString()}`, px + 30, y);
+  });
 }
 
 function drawHud(ctx, state) {
@@ -367,6 +421,9 @@ function drawHud(ctx, state) {
     ctx.fillText(label, camX - 98, FIELD.y + 18);
     camX -= 112;
   }
+
+  // The loot checklist: what is still in the room, what is already pocketed.
+  drawLootChecklist(ctx, state);
 }
 
 function drawPrompt(ctx, state) {
